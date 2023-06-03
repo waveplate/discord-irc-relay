@@ -49,8 +49,14 @@ client.on('messageCreate', message => {
     if(bots[message.author.id] == null)
         bots[message.author.id] = createBot(message.author.username);
 
-    if(message.author.id != client.user.id)
+    if(message.author.id != client.user.id){
         bots[message.author.id].say(ircOpts.chan, message.content);
+        if(message.attachments.size > 0){
+            message.attachments.forEach(attachment => {
+                bots[message.author.id].say(ircOpts.chan, attachment.url);
+            });
+        }
+    }
 });
 
 client.login(discordOpts.token);
