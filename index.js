@@ -78,7 +78,17 @@ function createBot(nick, registerCallback) {
 function relayMessage(message) {
     const ircChannel = getIrcChannelFromDiscordChannel(message.channel.id);
 
-    bots[message.author.id].say(ircChannel, message.content);
+    if(!ircChannel)
+        return;
+
+    let msg = '';
+
+    if(message.mentions && message.mentions.repliedUser)
+        msg += `${message.mentions.repliedUser.username}: `;
+    msg += message.content;
+
+    bots[message.author.id].say(ircChannel, msg);
+
     if (message.attachments.size > 0) {
         message.attachments.forEach(attachment => {
             bots[message.author.id].say(ircChannel, attachment.url);
