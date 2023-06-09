@@ -1,4 +1,4 @@
-# discord-irc-relay (1.0.0)
+# discord-irc-relay (1.0.3)
 a better discord-irc relay that represents each discord user as a separate irc client connection on the server
 
 ### configuration
