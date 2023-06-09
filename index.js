@@ -12,7 +12,7 @@ const client = new Client({
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent,
-        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.GuildMembers
     ],
 });
 
@@ -39,15 +39,29 @@ client.on('ready', () => {
 });
 
 client.on('messageCreate', message => {
-    if (message.author.id == client.user.id)
+    const ircChannel = getIrcChannelFromDiscordChannel(message.channel.id);
+
+    if (!ircChannel || message.author.id == client.user.id)
         return;
 
     if (bots[message.author.id] == null) {
-        bots[message.author.id] = createBot(message.author.username, () => {
-            relayMessage(message);
+        client.guilds.fetch(message.guildId).then(guild => {
+            guild.members.fetch(message.author.id).then(member => {
+                bots[message.author.id] = createBot(member.nickname||member.author.username, () => {
+                    relayMessage(ircChannel, message);
+                });
+            });
         });
     } else {
-        relayMessage(message);
+        relayMessage(ircChannel, message);
+    }
+});
+
+client.on('guildMemberUpdate', (oldMember, newMember) => {
+    if (bots[newMember.user.id]) {
+        let newNick = sanitizeDiscordUsername(newMember.nickname||newMember.user.username);
+        bots[newMember.user.id].changeNick(newNick);
+        bots[newMember.user.id].options.nick = newNick;
     }
 });
 
@@ -75,12 +89,7 @@ function createBot(nick, registerCallback) {
     return bot;
 }
 
-function relayMessage(message) {
-    const ircChannel = getIrcChannelFromDiscordChannel(message.channel.id);
-
-    if(!ircChannel)
-        return;
-
+function relayMessage(ircChannel, message) {
     let msg = '';
 
     if(message.mentions && message.mentions.repliedUser)
