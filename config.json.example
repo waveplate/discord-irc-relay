@@ -1,4 +1,5 @@
 {
+    "nick": "discordbot",
     "host": "irc.efnet.org",
     "port": 6697,
     "maxNickLength": 16,

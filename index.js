@@ -25,7 +25,7 @@ client.on('ready', () => {
         channels[channelId] = client.channels.cache.get(channelId);
     });
 
-    bots[client.user.id] = createBot(client.user.username);
+    bots[client.user.id] = createBot(config.nick);
 
     bots[client.user.id].on('message', function (event) {
         if(config.excludeNicks.includes(event.nick))
