@@ -33,6 +33,10 @@ client.on('ready', () => {
 
         let channel = channels[config.channels[event.target]];
         if (!messageIsFromRelay(event.nick)) {
+            event.nick = event.nick.replace(/\x03[0-9]{1,2}(,[0-9]{1,2})?/g, '');
+            event.message = event.message.replace(/\x03[0-9]{1,2}(,[0-9]{1,2})?/g, '');
+            event.nick = event.nick.replace(/[\x00-\x1F\x7F-\x9F]/g, '');
+            event.message = event.message.replace(/[\x00-\x1F\x7F-\x9F]/g, '');
             channel.send(`<${event.nick}> ${event.message}`).catch(console.error);
         }
     });
@@ -47,7 +51,7 @@ client.on('messageCreate', message => {
     if (bots[message.author.id] == null) {
         client.guilds.fetch(message.guildId).then(guild => {
             guild.members.fetch(message.author.id).then(member => {
-                bots[message.author.id] = createBot(member.nickname||member.author.username, () => {
+                bots[message.author.id] = createBot(member.nickname||message.author.username, () => {
                     relayMessage(ircChannel, message);
                 });
             });
