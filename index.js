@@ -26,28 +26,28 @@ client.on('ready', () => {
         channels[channelId] = client.channels.cache.get(channelId);
     });
 
-    bots[client.user.id] = createBot(config.nick);
-
-    bots[client.user.id].on('message', function (event) {
-        if(config.excludeNicks.includes(event.nick))
-            return;
-
-        let channel = channels[config.channels[event.target]];
-        
-        if (!messageIsFromRelay(event.nick)) {
-            event.nick = stripColours(event.nick);
-            event.message = stripColours(event.message);
-            channel
-                .send(`<${event.nick}> ${event.message}`)
-                .catch(console.error);
-        }
-    });
-
-    bots[client.user.id].on('nick', function (event) {
-        Object.values(channels).forEach(channel => {
-            channel
-                .send(`**${stripColours(event.nick)}** is now known as **${stripColours(event.new_nick)}**`)
-                .catch(console.error);
+    bots[client.user.id] = createBot(config.nick, () => {
+        bots[client.user.id].on('message', function (event) {
+            if(config.excludeNicks.includes(event.nick))
+                return;
+    
+            let channel = channels[config.channels[event.target]];
+            
+            if (!messageIsFromRelay(event.nick)) {
+                event.nick = stripColours(event.nick);
+                event.message = stripColours(event.message);
+                channel
+                    .send(`<${event.nick}> ${event.message}`)
+                    .catch(console.error);
+            }
+        });
+    
+        bots[client.user.id].on('nick', function (event) {
+            Object.values(channels).forEach(channel => {
+                channel
+                    .send(`**${stripColours(event.nick)}** is now known as **${stripColours(event.new_nick)}**`)
+                    .catch(console.error);
+            });
         });
     });
 });
@@ -73,9 +73,7 @@ client.on('messageCreate', message => {
 
 client.on('guildMemberUpdate', (oldMember, newMember) => {
     if (bots[newMember.user.id]) {
-        let newNick = sanitizeDiscordUsername(newMember.nickname||newMember.user.username);
-        bots[newMember.user.id].changeNick(newNick);
-        bots[newMember.user.id].options.nick = newNick;
+        changeNick(bots[newMember.user.id], newMember.nickname||newMember.user.username)
     }
 });
 
@@ -117,6 +115,12 @@ function relayMessage(ircChannel, message) {
             bots[message.author.id].say(ircChannel, attachment.url);
         });
     }
+}
+
+function changeNick(bot, nick){
+    let newNick = sanitizeDiscordUsername(nick);
+    bot.changeNick(newNick);
+    bot.options.nick = newNick;
 }
 
 function getIrcChannelFromDiscordChannel(discordChannelId) {
