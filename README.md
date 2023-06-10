@@ -1,6 +1,13 @@
 # discord-irc-relay (1.0.3)
 a better discord-irc relay that represents each discord user as a separate irc client connection on the server
 
+### features
+- each discord user joins the channel as a separate client (only if they chat)
+- map irc channels to discord channels
+- discord display name changes are reflected on irc
+- ability to exclude certain irc nicknames from reaching discord (youtube/twitter/title bots)
+- nicknames and messages are stripped of colours and control codes
+
 ### configuration
 
 edit `config.json.example` and rename it to `config.json`
