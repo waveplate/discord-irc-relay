@@ -1,6 +1,7 @@
 const IRC = require('irc-framework');
 const { Client, GatewayIntentBits } = require('discord.js');
 const fs = require('fs');
+const { channel } = require('diagnostics_channel');
 
 let bots = {};
 let channels = {};
@@ -32,13 +33,22 @@ client.on('ready', () => {
             return;
 
         let channel = channels[config.channels[event.target]];
+        
         if (!messageIsFromRelay(event.nick)) {
-            event.nick = event.nick.replace(/\x03[0-9]{1,2}(,[0-9]{1,2})?/g, '');
-            event.message = event.message.replace(/\x03[0-9]{1,2}(,[0-9]{1,2})?/g, '');
-            event.nick = event.nick.replace(/[\x00-\x1F\x7F-\x9F]/g, '');
-            event.message = event.message.replace(/[\x00-\x1F\x7F-\x9F]/g, '');
-            channel.send(`<${event.nick}> ${event.message}`).catch(console.error);
+            event.nick = stripColours(event.nick);
+            event.message = stripColours(event.message);
+            channel
+                .send(`<${event.nick}> ${event.message}`)
+                .catch(console.error);
         }
+    });
+
+    bots[client.user.id].on('nick', function (event) {
+        Object.values(channels).forEach(channel => {
+            channel
+                .send(`**${stripColours(event.nick)}** is now known as **${stripColours(event.new_nick)}**`)
+                .catch(console.error);
+        });
     });
 });
 
@@ -130,4 +140,10 @@ function messageIsFromRelay(nick) {
 
 function sanitizeDiscordUsername(username) {
     return username.replace(/[^a-zA-Z0-9]/g, '').substring(0, config.maxNickLength);
+}
+
+function stripColours(str) {
+    str = str.replace(/\x03[0-9]{1,2}(,[0-9]{1,2})?/g, '');
+    str = str.replace(/[\x00-\x1F\x7F-\x9F]/g, '');
+    return str;
 }
