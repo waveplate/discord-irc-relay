@@ -26,7 +26,7 @@ client.on('ready', () => {
         channels[channelId] = client.channels.cache.get(channelId);
     });
 
-    bots[client.user.id] = createBot(config.nick, () => {
+    bots[client.user.id] = createBot(config.nick, 'relay', () => {
         bots[client.user.id].on('message', function (event) {
             if(config.excludeNicks.includes(event.nick))
                 return;
@@ -43,9 +43,11 @@ client.on('ready', () => {
         });
     
         bots[client.user.id].on('nick', function (event) {
+            event.nick = stripColours(event.nick);
+            event.new_nick = stripColours(event.new_nick);
             Object.values(channels).forEach(channel => {
                 channel
-                    .send(`**${stripColours(event.nick)}** is now known as **${stripColours(event.new_nick)}**`)
+                    .send(`**${event.nick}** is now known as **${event.new_nick}**`)
                     .catch(console.error);
             });
         });
@@ -61,7 +63,7 @@ client.on('messageCreate', message => {
     if (bots[message.author.id] == null) {
         client.guilds.fetch(message.guildId).then(guild => {
             guild.members.fetch(message.author.id).then(member => {
-                bots[message.author.id] = createBot(member.nickname||message.author.username, () => {
+                bots[message.author.id] = createBot(message.author.username, member.nickname, () => {
                     relayMessage(ircChannel, message);
                 });
             });
@@ -77,15 +79,16 @@ client.on('guildMemberUpdate', (oldMember, newMember) => {
     }
 });
 
-function createBot(nick, registerCallback) {
-    console.log(`Creating bot for ${nick}`);
+function createBot(nick, username, registerCallback) {
+    console.log(`Creating bot for ${nick||username}`);
 
     var bot = new IRC.Client();
 
     bot.connect({
         host: config.host,
         port: config.port,
-        nick: sanitizeDiscordUsername(nick),
+        nick: sanitizeDiscordUsername(nick||username),
+        username: sanitizeDiscordUsername(username).substring(0, 8),
         tls: config.port == 6697 ? true : false,
         rejectUnauthorized: false,
     });
