@@ -1,7 +1,6 @@
 const IRC = require('irc-framework');
 const { Client, GatewayIntentBits } = require('discord.js');
 const fs = require('fs');
-const { channel } = require('diagnostics_channel');
 
 let bots = {};
 let channels = {};
