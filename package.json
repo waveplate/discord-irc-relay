@@ -1,6 +1,6 @@
 {
   "name": "discord-irc-relay",
-  "version": "0.1.0",
+  "version": "1.0.3",
   "description": "a better discord-irc relay that represents discord users as a separate irc client connection",
   "main": "index.js",
   "scripts": {
