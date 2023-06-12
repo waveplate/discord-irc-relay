@@ -62,7 +62,7 @@ client.on('messageCreate', message => {
     if (bots[message.author.id] == null) {
         client.guilds.fetch(message.guildId).then(guild => {
             guild.members.fetch(message.author.id).then(member => {
-                bots[message.author.id] = createBot(message.author.username, member.nickname, () => {
+                bots[message.author.id] = createBot(member.nickname, message.author.username, () => {
                     relayMessage(ircChannel, message);
                 });
             });
