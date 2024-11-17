@@ -28,3 +28,16 @@ you can exclude specific nicknames from the relay by adding the nicknames to the
 run `npm install`
 
 run `node .`
+
+### run with docker
+
+```
+docker build -t discord-irc-relay
+docker run -d discord-irc-relay -v ./config.json:/home/node/app/config.json
+```
+
+### run with docker-compose
+``` 
+docker-compose build
+docker-compose up -d
+```

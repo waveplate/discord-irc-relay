@@ -1,0 +1,9 @@
+---
+services:
+  discord-irc-relay:
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./config.json:/home/node/app/config.json
